@@ -960,7 +960,12 @@ class ECSCluster(SpecCluster):
         while timeout.run():
             try:
                 await self._clients["ec2"].delete_security_group(
-                    GroupName=self.cluster_name, DryRun=False
+                    GroupId=self._clients["ec2"].describe_security_groups(
+                        Filters = [
+                            {'Name': 'group-name', 'Values': [self.cluster_name]},
+                            {'Name': 'vpc-id', 'Values': [self._vpc]}
+                        ]
+                    )['SecurityGroups'][0]['GroupId'], DryRun=False
                 )
             except Exception:
                 await asyncio.sleep(2)
@@ -1163,7 +1168,7 @@ async def _cleanup_stale_resources():
                 sg_cluster = aws_to_dict(group["Tags"]).get("cluster")
                 if sg_cluster is None or sg_cluster not in active_clusters:
                     await ec2.delete_security_group(
-                        GroupName=group["GroupName"], DryRun=False
+                        GroupId=group["GroupId"], DryRun=False
                     )
 
     # Clean up roles (with no active clusters)
