@@ -894,7 +894,7 @@ class ECSCluster(SpecCluster):
         log_group_name = "dask-ecs"
         if log_group_name not in [
             group["logGroupName"]
-            for group in (await self._clients["logs"].describe_log_groups())[
+            for group in (await self._clients["logs"].describe_log_groups(logGroupNamePrefix=log_group_name))[
                 "logGroups"
             ]
         ]:
